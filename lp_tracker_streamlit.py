@@ -116,9 +116,6 @@ def get_token_amounts(liquidity, sqrt_price_x96, tick_lower, tick_upper, token0_
         amount0 / Decimal(10 ** token0_decimals),
         amount1 / Decimal(10 ** token1_decimals)
     )
-    ),
-        amount1 / Decimal(10 ** token1_decimals),
-    )
 
 def calculate_impermanent_loss(price_initial, price_current):
     if price_initial == 0:
