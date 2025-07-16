@@ -68,10 +68,9 @@ def fetch_position_mint(position_id):
     data = response.json().get("data", {})
     mints = data.get("mints", [])
     if mints:
-        return Decimal(mints[0]["sqrtPrice"]), int(mints[0]["timestamp"])
+        return Decimal(mints[0]["sqrtPrice"]), int(mints[0]["timestamp"]), "mint"
 
     # fallback: try to fetch first swap on the pool
-    # Get pool ID from any position
     pool_id_query = f"""
     {{
       position(id: \"{position_id}\") {{
@@ -95,9 +94,9 @@ def fetch_position_mint(position_id):
         swap_resp = requests.post(SUBGRAPH_URL, json={"query": swap_query})
         swaps = swap_resp.json().get("data", {}).get("swaps", [])
         if swaps:
-            return Decimal(swaps[0]["sqrtPrice"]), int(swaps[0]["timestamp"])
+            return Decimal(swaps[0]["sqrtPrice"]), int(swaps[0]["timestamp"]), "swap"
 
-    return None, None
+    return None, None, None
 
 def fetch_fees_collected(position_id):
     query = f"""
@@ -173,11 +172,12 @@ else:
             pos["liquidity"], sqrt_price_x96, int(pos["tickLower"]["tickIdx"]), int(pos["tickUpper"]["tickIdx"]), token0_decimals, token1_decimals
         )
 
-        sqrt_price_initial, ts = fetch_position_mint(pos["id"])
+        sqrt_price_initial, ts, source = fetch_position_mint(pos["id"])
         if sqrt_price_initial:
             price_initial = sqrt_price_to_price(sqrt_price_initial, token0_decimals, token1_decimals)
             il_percent = calculate_impermanent_loss(price_initial, price)
-            dt = datetime.utcfromtimestamp(ts).strftime('%Y-%m-%d %H:%M UTC')
+            label = "mint" if source == "mint" else "swap (estimé)"
+            dt = f"{datetime.utcfromtimestamp(ts).strftime('%Y-%m-%d %H:%M UTC')} — {label}"
         else:
             price_initial = Decimal(1)
             il_percent = Decimal(0)
