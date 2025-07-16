@@ -89,6 +89,9 @@ def sqrt_price_to_price(sqrt_price_x96, token0_decimals, token1_decimals):
     price = sqrt_price ** 2 * Decimal(10) ** (token0_decimals - token1_decimals)
     return price
 
+def tick_to_price(tick, token0_decimals, token1_decimals):
+    return Decimal(1.0001) ** tick * Decimal(10) ** (token0_decimals - token1_decimals)
+
 def get_token_amounts(liquidity, sqrt_price_x96, tick_lower, tick_upper, token0_decimals, token1_decimals):
     liquidity = Decimal(liquidity)
     sqrt_price = Decimal(sqrt_price_x96)
@@ -156,6 +159,9 @@ else:
 
         roi_net = (fees0 + fees1) - (amount0 + amount1) * il_percent / 100
 
+        price_lower = tick_to_price(int(pos["tickLower"]["tickIdx"]), token0_decimals, token1_decimals)
+        price_upper = tick_to_price(int(pos["tickUpper"]["tickIdx"]), token0_decimals, token1_decimals)
+
         export_data.append({
             "Position": pos['id'],
             "Token0": token0['symbol'],
@@ -171,10 +177,10 @@ else:
 
         with st.expander(f"🔹 Position {pos['id'][:8]}... by {pos['owner'][:8]}..."):
             st.markdown(f"**Pool**: `{token0['symbol']}` / `{token1['symbol']}`")
-            st.markdown(f"**Liquidity (raw)**: `{pos['liquidity']}`")
-            st.markdown(f"**Tick Range**: `{pos['tickLower']['tickIdx']}` - `{pos['tickUpper']['tickIdx']}`")
+            st.markdown(f"**Estimated Position Size**: `{amount0 + amount1:.4f}` tokens")
+            st.markdown(f"**Active Range**: ~[{price_lower:.4f} - {price_upper:.4f}] {token1['symbol']}")
             st.markdown(f"**Current Price**: `1 {token0['symbol']} ≈ {price:.6f} {token1['symbol']}`")
-            st.markdown(f"**Fee Tier**: `{Decimal(pool['feeTier']) / 1000000:.2%}`")
+            st.markdown(f"**Fee Tier**: `{Decimal(pool['feeTier']) / 10000:.2%}`")
             st.markdown(f"**Estimated holdings**: 🧮\n- `{amount0:.6f}` {token0['symbol']}\n- `{amount1:.6f}` {token1['symbol']}")
             st.markdown(f"**Initial Entry Price**: `{price_initial:.6f}` | 📅 `{dt}`")
             st.markdown(f"**Estimated Impermanent Loss**: `{il_percent:.2f}%`")
