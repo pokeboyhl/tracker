@@ -124,8 +124,8 @@ def tick_to_price(tick, token0_decimals, token1_decimals):
 def get_token_amounts(liquidity, sqrt_price_x96, tick_lower, tick_upper, token0_decimals, token1_decimals):
     liquidity = Decimal(liquidity)
     sqrt_price = Decimal(sqrt_price_x96)
-    sqrtPl = Decimal(1.0001) ** (Decimal(tick_lower) / 2) * (2 ** 96)
-    sqrtPu = Decimal(1.0001) ** (Decimal(tick_upper) / 2) * (2 ** 96)
+    sqrtPl = Decimal(1.0001) ** Decimal(tick_lower) * (2 ** 96)
+    sqrtPu = Decimal(1.0001) ** Decimal(tick_upper) * (2 ** 96)
 
     if sqrt_price <= sqrtPl:
         amount0 = liquidity * (sqrtPu - sqrtPl) / (sqrtPl * sqrtPu)
