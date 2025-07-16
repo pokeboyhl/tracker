@@ -86,10 +86,10 @@ def fetch_fees_collected(position_id):
 
 def sqrt_price_to_price(sqrt_price_x96, token0_decimals, token1_decimals):
     sqrt_price = Decimal(sqrt_price_x96) / (2 ** 96)
-    price = sqrt_price ** 2 * (10 ** (token0_decimals - token1_decimals))
+    price = sqrt_price ** 2 * Decimal(10) ** (token0_decimals - token1_decimals)
     return price
 
-def get_token_amounts(liquidity, sqrt_price_x96, tick_lower, tick_upper):
+def get_token_amounts(liquidity, sqrt_price_x96, tick_lower, tick_upper, token0_decimals, token1_decimals):
     liquidity = Decimal(liquidity)
     sqrt_price = Decimal(sqrt_price_x96)
     sqrtPl = Decimal(1.0001) ** (Decimal(tick_lower) / 2) * (2 ** 96)
@@ -105,7 +105,10 @@ def get_token_amounts(liquidity, sqrt_price_x96, tick_lower, tick_upper):
         amount0 = Decimal(0)
         amount1 = liquidity * (sqrtPu - sqrtPl) / (2 ** 96)
 
-    return amount0, amount1
+    return (
+        amount0 / Decimal(10 ** token0_decimals),
+        amount1 / Decimal(10 ** token1_decimals),
+    )
 
 def calculate_impermanent_loss(price_initial, price_current):
     if price_initial == 0:
@@ -128,16 +131,18 @@ else:
         pool = pos["pool"]
         token0 = pool["token0"]
         token1 = pool["token1"]
+        token0_decimals = int(token0["decimals"])
+        token1_decimals = int(token1["decimals"])
         sqrt_price_x96 = Decimal(pool["sqrtPrice"])
-        price = sqrt_price_to_price(sqrt_price_x96, int(token0["decimals"]), int(token1["decimals"]))
+        price = sqrt_price_to_price(sqrt_price_x96, token0_decimals, token1_decimals)
 
         amount0, amount1 = get_token_amounts(
-            pos["liquidity"], sqrt_price_x96, int(pos["tickLower"]["tickIdx"]), int(pos["tickUpper"]["tickIdx"])
+            pos["liquidity"], sqrt_price_x96, int(pos["tickLower"]["tickIdx"]), int(pos["tickUpper"]["tickIdx"]), token0_decimals, token1_decimals
         )
 
         sqrt_price_initial, ts = fetch_position_mint(pos["id"])
         if sqrt_price_initial:
-            price_initial = sqrt_price_to_price(sqrt_price_initial, int(token0["decimals"]), int(token1["decimals"]))
+            price_initial = sqrt_price_to_price(sqrt_price_initial, token0_decimals, token1_decimals)
             il_percent = calculate_impermanent_loss(price_initial, price)
             dt = datetime.utcfromtimestamp(ts).strftime('%Y-%m-%d %H:%M UTC')
         else:
@@ -146,6 +151,9 @@ else:
             dt = "Non disponible"
 
         fees0, fees1 = fetch_fees_collected(pos["id"])
+        fees0 /= Decimal(10 ** token0_decimals)
+        fees1 /= Decimal(10 ** token1_decimals)
+
         roi_net = (fees0 + fees1) - (amount0 + amount1) * il_percent / 100
 
         export_data.append({
@@ -163,10 +171,10 @@ else:
 
         with st.expander(f"🔹 Position {pos['id'][:8]}... by {pos['owner'][:8]}..."):
             st.markdown(f"**Pool**: `{token0['symbol']}` / `{token1['symbol']}`")
-            st.markdown(f"**Liquidity**: `{pos['liquidity']}`")
+            st.markdown(f"**Liquidity (raw)**: `{pos['liquidity']}`")
             st.markdown(f"**Tick Range**: `{pos['tickLower']['tickIdx']}` - `{pos['tickUpper']['tickIdx']}`")
             st.markdown(f"**Current Price**: `1 {token0['symbol']} ≈ {price:.6f} {token1['symbol']}`")
-            st.markdown(f"**Fee Tier**: `{int(pool['feeTier']) / 10000:.2%}`")
+            st.markdown(f"**Fee Tier**: `{Decimal(pool['feeTier']) / 10000:.2%}`")
             st.markdown(f"**Estimated holdings**: 🧮\n- `{amount0:.6f}` {token0['symbol']}\n- `{amount1:.6f}` {token1['symbol']}")
             st.markdown(f"**Initial Entry Price**: `{price_initial:.6f}` | 📅 `{dt}`")
             st.markdown(f"**Estimated Impermanent Loss**: `{il_percent:.2f}%`")
