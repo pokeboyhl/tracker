@@ -152,9 +152,6 @@ else:
             price_initial = Decimal(1)
             il_percent = Decimal(0)
             dt = "🚫 Mint non trouvé — prix initial inconnu"
-            price_initial = Decimal(1)
-            il_percent = Decimal(0)
-            dt = "Non disponible"
 
         fees0, fees1 = fetch_fees_collected(pos["id"])
         fees0 /= Decimal(10 ** token0_decimals)
