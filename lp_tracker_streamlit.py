@@ -152,7 +152,6 @@ else:
             price_initial = Decimal(1)
             il_percent = Decimal(0)
             dt = "🚫 Mint non trouvé — prix initial inconnu"
-        else:
             price_initial = Decimal(1)
             il_percent = Decimal(0)
             dt = "Non disponible"
