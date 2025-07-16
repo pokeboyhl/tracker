@@ -95,21 +95,27 @@ def tick_to_price(tick, token0_decimals, token1_decimals):
 def get_token_amounts(liquidity, sqrt_price_x96, tick_lower, tick_upper, token0_decimals, token1_decimals):
     liquidity = Decimal(liquidity)
     sqrt_price = Decimal(sqrt_price_x96)
-    sqrtPl = Decimal(1.0001) ** (Decimal(tick_lower) / 2) * (2 ** 96)
-    sqrtPu = Decimal(1.0001) ** (Decimal(tick_upper) / 2) * (2 ** 96)
 
-    if sqrt_price <= sqrtPl:
-        amount0 = liquidity * (sqrtPu - sqrtPl) / (sqrtPl * sqrtPu)
+    sqrtPl = Decimal(1.0001) ** Decimal(tick_lower)
+    sqrtPu = Decimal(1.0001) ** Decimal(tick_upper)
+
+    sqrtPlX96 = sqrtPl * (2 ** 96)
+    sqrtPuX96 = sqrtPu * (2 ** 96)
+
+    if sqrt_price <= sqrtPlX96:
+        amount0 = liquidity * (sqrtPuX96 - sqrtPlX96) / (sqrtPlX96 * sqrtPuX96)
         amount1 = Decimal(0)
-    elif sqrt_price < sqrtPu:
-        amount0 = liquidity * (sqrtPu - sqrt_price) / (sqrt_price * sqrtPu)
-        amount1 = liquidity * (sqrt_price - sqrtPl) / (2 ** 96)
+    elif sqrt_price < sqrtPuX96:
+        amount0 = liquidity * (sqrtPuX96 - sqrt_price) / (sqrt_price * sqrtPuX96)
+        amount1 = liquidity * (sqrt_price - sqrtPlX96) / (2 ** 96)
     else:
         amount0 = Decimal(0)
-        amount1 = liquidity * (sqrtPu - sqrtPl) / (2 ** 96)
+        amount1 = liquidity * (sqrtPuX96 - sqrtPlX96) / (2 ** 96)
 
     return (
         amount0 / Decimal(10 ** token0_decimals),
+        amount1 / Decimal(10 ** token1_decimals),
+    ),
         amount1 / Decimal(10 ** token1_decimals),
     )
 
