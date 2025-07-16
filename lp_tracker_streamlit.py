@@ -60,13 +60,43 @@ def fetch_position_mint(position_id):
       mints(first: 1, where: {{ position: \"{position_id}\" }}, orderBy: timestamp, orderDirection: asc) {{
         timestamp
         sqrtPrice
+        position {{ pool {{ id }} }}
       }}
     }}
     """
     response = requests.post(SUBGRAPH_URL, json={"query": query})
-    mints = response.json().get("data", {}).get("mints", [])
+    data = response.json().get("data", {})
+    mints = data.get("mints", [])
     if mints:
         return Decimal(mints[0]["sqrtPrice"]), int(mints[0]["timestamp"])
+
+    # fallback: try to fetch first swap on the pool
+    # Get pool ID from any position
+    pool_id_query = f"""
+    {{
+      position(id: \"{position_id}\") {{
+        pool {{ id }}
+      }}
+    }}
+    """
+    pool_resp = requests.post(SUBGRAPH_URL, json={"query": pool_id_query})
+    pool_data = pool_resp.json().get("data", {}).get("position", {})
+    pool_id = pool_data.get("pool", {}).get("id")
+
+    if pool_id:
+        swap_query = f"""
+        {{
+          swaps(first: 1, where: {{ pool: \"{pool_id}\" }}, orderBy: timestamp, orderDirection: asc) {{
+            sqrtPrice
+            timestamp
+          }}
+        }}
+        """
+        swap_resp = requests.post(SUBGRAPH_URL, json={"query": swap_query})
+        swaps = swap_resp.json().get("data", {}).get("swaps", [])
+        if swaps:
+            return Decimal(swaps[0]["sqrtPrice"]), int(swaps[0]["timestamp"])
+
     return None, None
 
 def fetch_fees_collected(position_id):
