@@ -213,9 +213,9 @@ else:
             st.markdown(f"**Fee Tier**: `{Decimal(pool['feeTier']) / 1000000:.2%}`")
             if amount0 == 0 and amount1 == 0:
                 st.warning("⚠️ Position currently out of range — no tokens active.")
-            st.markdown(f"**Estimated holdings**: 🧮
-- `{amount0:.12f}` {token0['symbol']}
-- `{amount1:.12f}` {token1['symbol']}")
+            st.markdown(f"""**Estimated holdings**: 🧮  
+- `{amount0:.12f}` {token0['symbol']}  
+- `{amount1:.12f}` {token1['symbol']}""")
             st.markdown(f"**Initial Entry Price**: `{price_initial:.6f}` | 📅 `{dt}`")
             st.markdown(f"**Estimated Impermanent Loss**: `{il_percent:.2f}%`")
             st.markdown(f"**Fees collected**: 💸\n- `{fees0:.6f}` {token0['symbol']}\n- `{fees1:.6f}` {token1['symbol']}`")
