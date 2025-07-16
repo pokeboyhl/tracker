@@ -177,7 +177,7 @@ else:
 
         with st.expander(f"🔹 Position {pos['id'][:8]}... by {pos['owner'][:8]}..."):
             st.markdown(f"**Pool**: `{token0['symbol']}` / `{token1['symbol']}`")
-            st.markdown(f"**Estimated Position Size**: ~`{amount0:.4f}` {token0['symbol']} + `{amount1:.4f}` {token1['symbol']}`")
+            st.markdown(f"**Estimated Position Size**: ~`{amount0:.4f}` {token0['symbol']} + `{amount1:.4f}` {token1['symbol']}")
             st.markdown(f"**Active Range**: ~[{price_lower:.4f} - {price_upper:.4f}] {token1['symbol']}")
             st.markdown(f"**Current Price**: `1 {token0['symbol']} ≈ {price:.6f} {token1['symbol']}`")
             st.markdown(f"**Fee Tier**: `{Decimal(pool['feeTier']) / 1000000:.2%}`")
