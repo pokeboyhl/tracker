@@ -14,7 +14,7 @@ def fetch_positions(wallet=None):
         wallet = wallet.lower()
         query = f"""
         {{
-          positions(first: 20, where: {{ owner: \"{wallet}\" }}, orderBy: liquidity, orderDirection: asc) {{
+          positions(first: 20, where: {{ owner: \"{wallet}\", id: "105" }}, orderBy: liquidity, orderDirection: desc) {{
             id
             owner
             liquidity
