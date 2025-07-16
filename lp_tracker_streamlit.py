@@ -3,7 +3,7 @@ import requests
 from decimal import Decimal, getcontext
 from datetime import datetime
 import pandas as pd
-import matplotlib.pyplot as plt
+import altair as alt
 
 getcontext().prec = 28
 
@@ -170,13 +170,19 @@ else:
             st.markdown(f"**Estimated holdings**: 🧮\n- `{amount0:.6f}` {token0['symbol']}\n- `{amount1:.6f}` {token1['symbol']}")
             st.markdown(f"**Initial Entry Price**: `{price_initial:.6f}` | 📅 `{dt}`")
             st.markdown(f"**Estimated Impermanent Loss**: `{il_percent:.2f}%`")
-            st.markdown(f"**Fees collected**: 💸\n- `{fees0:.6f}` {token0['symbol']}\n- `{fees1:.6f}` {token1['symbol']}")
+            st.markdown(f"**Fees collected**: 💸\n- `{fees0:.6f}` {token0['symbol']}\n- `{fees1:.6f}` {token1['symbol']}`")
             st.markdown(f"**ROI net (approx.)**: `{roi_net:.4f}`")
 
-            fig, ax = plt.subplots()
-            ax.bar(["Holdings", "Fees"], [float(amount0 + amount1), float(fees0 + fees1)])
-            ax.set_title("Valeur Holdings vs. Fees")
-            st.pyplot(fig)
+            chart_data = pd.DataFrame({
+                "Category": ["Holdings", "Fees"],
+                "Value": [float(amount0 + amount1), float(fees0 + fees1)]
+            })
+            bar_chart = alt.Chart(chart_data).mark_bar().encode(
+                x="Category",
+                y="Value",
+                color="Category"
+            ).properties(width=400, height=300)
+            st.altair_chart(bar_chart, use_container_width=True)
 
     df = pd.DataFrame(export_data)
     st.download_button("⬇️ Télécharger CSV des positions", data=df.to_csv(index=False), file_name="positions_lp.csv", mime="text/csv")
