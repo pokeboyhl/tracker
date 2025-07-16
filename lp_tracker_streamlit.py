@@ -57,7 +57,7 @@ def fetch_positions(wallet=None):
 def fetch_position_mint(position_id):
     query = f"""
     {{
-      mints(first: 1, where: {{ position: \"{position_id}\" }}, orderBy: timestamp, orderDirection: asc) {{
+      mints(first: 1, where: {{ tokenId: \"{position_id}\" }}, orderBy: timestamp, orderDirection: asc) {{
         timestamp
         sqrtPrice
       }}
