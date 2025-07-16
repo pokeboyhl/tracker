@@ -174,7 +174,7 @@ else:
             st.markdown(f"**Liquidity (raw)**: `{pos['liquidity']}`")
             st.markdown(f"**Tick Range**: `{pos['tickLower']['tickIdx']}` - `{pos['tickUpper']['tickIdx']}`")
             st.markdown(f"**Current Price**: `1 {token0['symbol']} ≈ {price:.6f} {token1['symbol']}`")
-            st.markdown(f"**Fee Tier**: `{Decimal(pool['feeTier']) / 10000:.2%}`")
+            st.markdown(f"**Fee Tier**: `{Decimal(pool['feeTier']) / 1000000:.2%}`")
             st.markdown(f"**Estimated holdings**: 🧮\n- `{amount0:.6f}` {token0['symbol']}\n- `{amount1:.6f}` {token1['symbol']}")
             st.markdown(f"**Initial Entry Price**: `{price_initial:.6f}` | 📅 `{dt}`")
             st.markdown(f"**Estimated Impermanent Loss**: `{il_percent:.2f}%`")
